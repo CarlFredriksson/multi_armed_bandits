@@ -20,6 +20,10 @@ def my_argmax(Q_values):
     return np.random.choice(ties)
 
 def run_epsilon_greedy(q, num_steps, epsilon, const_alpha=None, Q_0=0, stationary=True):
+    """
+    Run a single run of the epsilon greedy algorithm.
+    Returns the returns and an array where 1 means optimal action was selected and 0 it wasn't.
+    """
     R = np.zeros((num_steps,))
     optimal = np.zeros((num_steps,))
     Q = np.ones(np.shape(q)) * Q_0
@@ -28,7 +32,7 @@ def run_epsilon_greedy(q, num_steps, epsilon, const_alpha=None, Q_0=0, stationar
     # Run steps
     for t in range(0, num_steps):
         if not stationary:
-            q = q + np.random.normal(scale=0.01, size=np.shape(q))
+            q = q + np.random.normal(scale=0.05, size=np.shape(q))
 
         # Choose action greedily by default and randomly by probability epsilon
         a = my_argmax(Q)
@@ -50,6 +54,10 @@ def run_epsilon_greedy(q, num_steps, epsilon, const_alpha=None, Q_0=0, stationar
     return R, optimal
 
 def run_experiments(parameters, num_runs, num_steps, k, stationary=True):
+    """
+    Run multiple runs of epsilon greedy.
+    Returns the averaged results and optimal action selections.
+    """
     bandits = np.random.normal(loc=0, scale=1, size=(num_runs, k))
     R = np.zeros((len(parameters), num_runs, num_steps))
     optimal = np.zeros(np.shape(R))
@@ -67,6 +75,7 @@ def run_experiments(parameters, num_runs, num_steps, k, stationary=True):
     return np.mean(R, axis=1), np.mean(optimal, axis=1)
 
 def plot_subplot(y, y_label, title=None):
+    """Plot a subplot of results or optimal action selections."""
     num_plots = np.shape(y)[0]
     x = np.arange(0, np.shape(y)[1])
 
@@ -89,6 +98,7 @@ def plot_subplot(y, y_label, title=None):
         plt.title(title)
 
 def plot_results(file_name, R_avg, optimal_avg, parameters, title):
+    """Plot the averaged results and optimal action selections."""
     plt.figure(figsize=(10, 8))
     plt.subplot(2, 1, 1)
     plot_subplot(R_avg, "Average reward", title)
@@ -106,10 +116,10 @@ if __name__ == "__main__":
         { "epsilon": 0, "const_alpha": 0.1, "Q_0": 0 },
         { "epsilon": 0, "const_alpha": 0.1, "Q_0": 5 },
     ]
-    num_runs = 1000
-    num_steps = 1000
+    num_runs = 2000
+    num_steps = 10000
     k = 10
     R_avg, optimal_avg = run_experiments(parameters, num_runs, num_steps, k)
     plot_results("results_stationary.png", R_avg, optimal_avg, parameters, "Stationary")
-    R_avg, optimal_avg = run_experiments(parameters, num_runs, num_steps, k)
+    R_avg, optimal_avg = run_experiments(parameters, num_runs, num_steps, k, stationary=False)
     plot_results("results_non-stationary.png", R_avg, optimal_avg, parameters, "Non-stationary")
